@@ -1,46 +1,20 @@
 import Dependencies
-import DependenciesMacros
 import Foundation
 
-public struct APIClient: Sendable {
+public protocol APIClient: Sendable {
+    var configuration: NetworkConfiguration { get }
+    var decoder: any _NetworkDecoder { get }
 
-    /// Performs the request and returns the body of a successful (2xx) response.
-    public var data: @Sendable (_ request: URLRequest) async throws -> Data
+    func fetch<Value: Sendable & Decodable>(request: some Request) async throws(APIError) -> (value: Value, response: HTTPURLResponse)
 }
 
-extension APIClient {
-
-    public func decoded<Value: Decodable>(
-        _ type: Value.Type = Value.self,
-        for request: URLRequest,
-        decoder: JSONDecoder = JSONDecoder()
-    ) async throws -> Value {
-        try decoder.decode(Value.self, from: await data(request))
-    }
-
-    static func validate(_ response: URLResponse) throws {
-        guard let response = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-        guard 200..<300 ~= response.statusCode else {
-            throw APIError.unacceptableStatusCode(response.statusCode)
-        }
-    }
-}
-
-extension APIClient: DependencyKey {
-
-    public static let liveValue = APIClient { request in
-        let (data, response) = try await URLSession.shared.data(for: request)
-        try validate(response)
-        return data
-    }
+private enum APIClientKey: DependencyKey {
+    static let liveValue: any APIClient = StandardAPIClient()
 }
 
 extension DependencyValues {
-
-    public var apiClient: APIClient {
-        get { self[APIClient.self] }
-        set { self[APIClient.self] = newValue }
+    public var apiClient: any APIClient {
+        get { self[APIClientKey.self] }
+        set { self[APIClientKey.self] = newValue }
     }
 }
