@@ -28,7 +28,7 @@ public struct ProductDetailsView: View {
     }
 
     public var body: some View {
-        PlaceholderView(title: "Product \(store.id)")
+        Text("Product \(store.id)")
             .navigationTitle("Product")
     }
 }

@@ -48,7 +48,7 @@ public struct ProductsListView: View {
     }
 
     public var body: some View {
-        PlaceholderView(title: "Products")
+        Text("Products")
             .navigationTitle("Products")
     }
 }

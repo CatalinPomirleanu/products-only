@@ -16,9 +16,13 @@ public enum CatalogIcon: String, CaseIterable, Sendable {
     case truck
 
     public var view: some View {
+        view(size: Tokens.Size.iconSize)
+    }
+
+    public func view(size: CGFloat) -> some View {
         Image("CatalogIcon/\(rawValue)", bundle: .module)
             .resizable()
             .renderingMode(.template)
-            .frame(width: Tokens.Size.iconSize, height: Tokens.Size.iconSize)
+            .frame(width: size, height: size)
     }
 }
