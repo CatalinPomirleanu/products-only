@@ -18,7 +18,8 @@ let package = Package(
         .library(name: "Core", targets: ["Core"]),
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
         .library(name: "ProductDetails", targets: ["ProductDetails"]),
-        .library(name: "ProductsList", targets: ["ProductsList"])
+        .library(name: "ProductsList", targets: ["ProductsList"]),
+        .library(name: "StyleGuide", targets: ["StyleGuide"])
     ],
     dependencies: [
         .package(
@@ -46,7 +47,13 @@ let package = Package(
         .target(name: "Core"),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),
 
-        .target(name: "DesignSystem", swiftSettings: mainActorIsolation),
+        .target(
+            name: "StyleGuide",
+            resources: [.process("Catalog.xcassets")],
+            swiftSettings: mainActorIsolation
+        ),
+
+        .target(name: "DesignSystem", dependencies: ["StyleGuide"], swiftSettings: mainActorIsolation),
 
         .target(
             name: "ComposableArchitectureSupport",
