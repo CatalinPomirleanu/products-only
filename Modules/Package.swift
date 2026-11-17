@@ -81,12 +81,19 @@ let package = Package(
 
         .target(
             name: "ProductsList",
-            dependencies: ["API", "ComposableArchitectureSupport", "Core", "DesignSystem"],
+            dependencies: [
+                "API",
+                "ComposableArchitectureSupport",
+                "Core",
+                "DesignSystem",
+                "Localisations",
+                "StyleGuide"
+            ],
             swiftSettings: mainActorIsolation
         ),
         .testTarget(
             name: "ProductsListTests",
-            dependencies: ["ProductsList"],
+            dependencies: ["API", "ProductsList"],
             swiftSettings: mainActorIsolation
         )
     ],

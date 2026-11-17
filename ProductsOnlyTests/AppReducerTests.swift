@@ -23,8 +23,7 @@ struct AppReducerTests {
     func productTapped() async {
         let store = makeStore()
 
-        await store.send(.productsList(.view(.productTapped(id: 7))))
-        await store.receive(.productsList(.delegate(.productSelected(id: 7)))) {
+        await store.send(.productsList(.delegate(.productSelected(id: 7)))) {
             $0.path[id: 0] = .productDetails(ProductDetailsReducer.State(id: 7))
         }
     }
