@@ -11,12 +11,14 @@ let mainActorIsolation: [SwiftSetting] = [
 
 let package = Package(
     name: "Modules",
+    defaultLocalization: "en",
     platforms: [.iOS(.v26)],
     products: [
         .library(name: "API", targets: ["API"]),
         .library(name: "ComposableArchitectureSupport", targets: ["ComposableArchitectureSupport"]),
         .library(name: "Core", targets: ["Core"]),
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
+        .library(name: "Localisations", targets: ["Localisations"]),
         .library(name: "ProductDetails", targets: ["ProductDetails"]),
         .library(name: "ProductsList", targets: ["ProductsList"]),
         .library(name: "StyleGuide", targets: ["StyleGuide"])
@@ -53,7 +55,13 @@ let package = Package(
             swiftSettings: mainActorIsolation
         ),
 
-        .target(name: "DesignSystem", dependencies: ["StyleGuide"], swiftSettings: mainActorIsolation),
+        .target(name: "Localisations", resources: [.process("Localizable.xcstrings")]),
+
+        .target(
+            name: "DesignSystem",
+            dependencies: ["Localisations", "StyleGuide"],
+            swiftSettings: mainActorIsolation
+        ),
 
         .target(
             name: "ComposableArchitectureSupport",

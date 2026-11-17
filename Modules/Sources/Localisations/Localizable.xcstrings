@@ -1,0 +1,256 @@
+{
+  "sourceLanguage": "en",
+  "version": "1.0",
+  "strings": {
+    "list.title": {
+      "comment": "List screen. Large title in the top bar.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Products" } } }
+    },
+    "search.placeholder": {
+      "comment": "List screen. Placeholder and accessibility label of the search field.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Search products" } } }
+    },
+    "search.clear": {
+      "comment": "List screen. Accessibility label of the clear button in the search field, and the button in the no-results state.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Clear search" } } }
+    },
+    "list.count.products %lld": {
+      "comment": "List screen. Count line under the search field when no search is active. Argument: number of products.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": { "stringUnit": { "state": "translated", "value": "%lld product" } },
+              "other": { "stringUnit": { "state": "translated", "value": "%lld products" } }
+            }
+          }
+        }
+      }
+    },
+    "list.count.results %lld %@": {
+      "comment": "List screen. Count line during a search. Arguments: number of results, the search text. The search text sits in curly quotes.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": { "state": "translated", "value": "%#@results@ for “%2$@”" },
+          "substitutions": {
+            "results": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": { "stringUnit": { "state": "translated", "value": "%arg result" } },
+                  "other": { "stringUnit": { "state": "translated", "value": "%arg results" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "list.empty.title %@": {
+      "comment": "List screen. Title of the no-results state. Argument: the search text, in curly quotes.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "No products match “%@”" } } }
+    },
+    "list.empty.body": {
+      "comment": "List screen. Second line of the no-results state.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Check the spelling or try a shorter search." } } }
+    },
+    "list.error.title": {
+      "comment": "List screen. Title when the products could not be fetched.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Couldn’t load products" } } }
+    },
+    "list.error.body": {
+      "comment": "List screen. Second line when the products could not be fetched.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Check your connection and try again." } } }
+    },
+    "list.error.retry": {
+      "comment": "List screen. Primary button in the failed-to-load state.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Try again" } } }
+    },
+    "list.loading": {
+      "comment": "List screen. Accessibility label for the skeleton cards shown while the list loads. Not visible.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Loading products" } } }
+    },
+    "details.back": {
+      "comment": "Details screen. Accessibility label of the back button in the top bar.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Back" } } }
+    },
+    "details.section.about": {
+      "comment": "Details screen. Heading above the description and tags.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "About this product" } } }
+    },
+    "details.section.delivery": {
+      "comment": "Details screen. Heading above shipping, warranty and return policy.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Delivery and returns" } } }
+    },
+    "details.section.specifications": {
+      "comment": "Details screen. Heading above the specification rows.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Specifications" } } }
+    },
+    "details.section.reviews %lld": {
+      "comment": "Details screen. Heading above the reviews. Argument: number of reviews.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Reviews (%lld)" } } }
+    },
+    "details.minOrder %lld": {
+      "comment": "Details screen. Badge beside the stock badge, shown when minimumOrderQuantity is above 1. Argument: the quantity.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Min. order %lld" } } }
+    },
+    "spec.shipping": {
+      "comment": "Details screen, Delivery and returns. Row label for shippingInformation.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Shipping" } } }
+    },
+    "spec.warranty": {
+      "comment": "Details screen, Delivery and returns. Row label for warrantyInformation.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Warranty" } } }
+    },
+    "spec.returns": {
+      "comment": "Details screen, Delivery and returns. Row label for returnPolicy.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Returns" } } }
+    },
+    "spec.brand": {
+      "comment": "Details screen, Specifications. Row label for brand.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Brand" } } }
+    },
+    "spec.category": {
+      "comment": "Details screen, Specifications. Row label for category.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Category" } } }
+    },
+    "spec.sku": {
+      "comment": "Details screen, Specifications. Row label for sku.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "SKU" } } }
+    },
+    "spec.barcode": {
+      "comment": "Details screen, Specifications. Row label for meta.barcode.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Barcode" } } }
+    },
+    "spec.weight": {
+      "comment": "Details screen, Specifications. Row label for weight. The value has no unit.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Weight" } } }
+    },
+    "spec.size": {
+      "comment": "Details screen, Specifications. Row label for dimensions, shown as width × height × depth with no unit.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Size (W × H × D)" } } }
+    },
+    "spec.minimumOrder": {
+      "comment": "Details screen, Specifications. Row label for minimumOrderQuantity.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Minimum order" } } }
+    },
+    "spec.units %lld": {
+      "comment": "Details screen, Specifications. Value of the Minimum order row. Argument: the quantity.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": { "stringUnit": { "state": "translated", "value": "%lld unit" } },
+              "other": { "stringUnit": { "state": "translated", "value": "%lld units" } }
+            }
+          }
+        }
+      }
+    },
+    "review.anonymous": {
+      "comment": "Details screen, Reviews. Shown in place of the reviewer's name when the response has none.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Anonymous" } } }
+    },
+    "stock.inStock": {
+      "comment": "Stock badge for availabilityStatus \"In Stock\". Shown on the details screen only.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "In stock" } } }
+    },
+    "stock.lowStock": {
+      "comment": "Stock badge for availabilityStatus \"Low Stock\" when the stock count is missing or zero.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Low stock" } } }
+    },
+    "stock.lowStockCount %lld": {
+      "comment": "Stock badge for availabilityStatus \"Low Stock\". Argument: units left (stock). The separator is a middle dot.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Low stock · %lld left" } } }
+    },
+    "stock.outOfStock": {
+      "comment": "Stock badge for availabilityStatus \"Out of Stock\".",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Out of stock" } } }
+    },
+    "a11y.rating %@": {
+      "comment": "Accessibility label of the rating stars. Not visible. Argument: the rating to one decimal, for example 4.9.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Rated %@ out of 5" } } }
+    },
+    "a11y.ratingWithReviews %@ %lld": {
+      "comment": "Accessibility label of the rating on the details screen. Not visible. Arguments: the rating to one decimal, number of reviews.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": { "state": "translated", "value": "Rated %1$@ out of 5, %#@reviews@" },
+          "substitutions": {
+            "reviews": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": { "stringUnit": { "state": "translated", "value": "%arg review" } },
+                  "other": { "stringUnit": { "state": "translated", "value": "%arg reviews" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "a11y.price.discounted %@ %@ %@": {
+      "comment": "Accessibility label of a discounted price. Not visible. Arguments: price paid, list price, discount percentage, each already formatted.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Now %1$@, was %2$@, discount %3$@" } } }
+    },
+    "a11y.gallery %@": {
+      "comment": "Accessibility label of the image gallery. Not visible. Argument: the product title.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "%@ images" } } }
+    },
+    "a11y.gallery.image %@ %lld %lld": {
+      "comment": "Accessibility label of one gallery image. Not visible. Arguments: the product title, this image's position, total images.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "%1$@, image %2$lld of %3$lld" } } }
+    },
+    "a11y.gallery.show %lld": {
+      "comment": "Accessibility label of a gallery dot. Not visible. Argument: the image's position.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Show image %lld" } } }
+    },
+    "a11y.image.missing %@": {
+      "comment": "Accessibility label of the placeholder shown when a product image is missing or failed to load. Not visible. Argument: the product title.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "%@, no image" } } }
+    }
+  }
+}
