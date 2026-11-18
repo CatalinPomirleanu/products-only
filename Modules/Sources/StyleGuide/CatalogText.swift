@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// The eight text styles. Use `.catalogText(.body)` rather than setting fonts by hand.
 public enum CatalogText: CaseIterable, Sendable {
-    case display, title, heading, body, bodyStrong, label, caption, code
+    case display, title, heading, body, bodyStrong, label, caption, captionStrong, code
 
     /// Point size at the default Dynamic Type setting.
     public var size: CGFloat {
@@ -13,7 +12,7 @@ public enum CatalogText: CaseIterable, Sendable {
         case .body: return 15
         case .bodyStrong: return 15
         case .label: return 13
-        case .caption: return 12
+        case .caption, .captionStrong: return 12
         case .code: return 13
         }
     }
@@ -27,7 +26,7 @@ public enum CatalogText: CaseIterable, Sendable {
         case .body: return 22
         case .bodyStrong: return 22
         case .label: return 18
-        case .caption: return 16
+        case .caption, .captionStrong: return 16
         case .code: return 18
         }
     }
@@ -41,22 +40,8 @@ public enum CatalogText: CaseIterable, Sendable {
         case .body: return 0
         case .bodyStrong: return 0
         case .label: return 0
-        case .caption: return 0
+        case .caption, .captionStrong: return 0
         case .code: return 0
-        }
-    }
-
-    /// PostScript name of the Work Sans face, or nil for the system monospaced font.
-    public var fontName: String? {
-        switch self {
-        case .display: return "WorkSans-Bold"
-        case .title: return "WorkSans-SemiBold"
-        case .heading: return "WorkSans-SemiBold"
-        case .body: return "WorkSans-Regular"
-        case .bodyStrong: return "WorkSans-SemiBold"
-        case .label: return "WorkSans-Medium"
-        case .caption: return "WorkSans-Medium"
-        case .code: return nil
         }
     }
 
@@ -69,15 +54,19 @@ public enum CatalogText: CaseIterable, Sendable {
         case .body: return .subheadline
         case .bodyStrong: return .subheadline
         case .label: return .footnote
-        case .caption: return .caption
+        case .caption, .captionStrong: return .caption
         case .code: return .footnote
         }
     }
 
-    /// Falls back to the system font if Work Sans is not registered in the app.
     public var font: Font {
-        guard let fontName else { return .system(relativeTo, design: .monospaced) }
-        return .custom(fontName, size: size, relativeTo: relativeTo)
+        switch self {
+        case .display, .captionStrong: return .system(relativeTo, weight: .bold)
+        case .title, .heading, .bodyStrong: return .system(relativeTo, weight: .semibold)
+        case .body: return .system(relativeTo, weight: .regular)
+        case .label, .caption: return .system(relativeTo, weight: .medium)
+        case .code: return .system(relativeTo, design: .monospaced)
+        }
     }
 }
 
