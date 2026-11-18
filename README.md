@@ -4,6 +4,8 @@ Small iOS app experimenting with the DummyJSON Products API
 Building a demo app today is a completely different experience compared to two years ago. Having AI as a development partner allows us to focus on far more aspects of the application and deliver a much more detailed, polished solution in the same amount of time.
 With that in mind, this application was built by leveraging AI tooling—with **Claude Code** serving as the primary development partner.
 
+https://github.com/user-attachments/assets/c870c1e6-1a23-4ea0-82fe-52fa94ff30f4
+
 ## Tech Stack
 
 * **Language & Concurrency:** Swift 6, `async/await`
