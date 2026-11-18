@@ -53,6 +53,22 @@ struct AppReducerTests {
     }
 
     @Test("""
+    Given a missing product on the stack
+    When Back to products is tapped
+    Then the product list is shown
+    """)
+    func backToProducts() async throws {
+        let details = ProductDetailsReducer.State(id: 42, content: .notFound)
+        let path = StackState<AppReducer.Path.State>([.productDetails(details)])
+        let store = makeStore(path: path)
+        let id = try #require(path.ids.last)
+
+        await store.send(.path(.element(id: id, action: .productDetails(.delegate(.backToProducts))))) {
+            $0.path.removeAll()
+        }
+    }
+
+    @Test("""
     Given product details on the stack
     When the products list deeplink is opened
     Then the stack is popped to the products list

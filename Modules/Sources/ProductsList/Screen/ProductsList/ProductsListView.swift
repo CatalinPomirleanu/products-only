@@ -24,8 +24,8 @@ public nonisolated struct ProductsListReducer {
             }
 
             static func nextOffset(after page: ProductsPage) -> Int? {
-                guard !page.products.isEmpty, page.skip + page.products.count < page.total else { return nil }
-                return page.skip + page.limit
+                let nextOffset = page.skip + page.products.count
+                return !page.products.isEmpty && nextOffset < page.total ? nextOffset : nil
             }
         }
 

@@ -155,7 +155,10 @@ struct ProductsListReducerTests {
     Then the next offset is set only while more products remain
     """)
     func resultsNextOffset() {
+        let shortPage = ProductsPage(products: Array(secondPage.products.prefix(12)), total: 45, skip: 20, limit: 20)
+
         #expect(State.Results(page: firstPage).nextOffset == 20)
+        #expect(State.Results(page: shortPage).nextOffset == 32)
         #expect(State.Results(page: secondPage).nextOffset == 40)
         #expect(State.Results(page: ProductsPage.mock(ids: 41...45, total: 45, skip: 40)).nextOffset == nil)
         #expect(State.Results(page: ProductsPage.mock(ids: nil, total: 45, skip: 20)).nextOffset == nil)

@@ -1,6 +1,10 @@
 import Foundation
 import Dependencies
 
+public nonisolated enum ProductDetailsRepositoryError: Error {
+    case notFound
+}
+
 public protocol ProductDetailsRepository: Sendable {
     func fetch(request: ProductDetailsRequest) async throws -> ProductDetails
 }

@@ -13,6 +13,7 @@ struct DeeplinkTests {
         ("productsonly://products", Deeplink.productsList),
         ("productsonly://products/", Deeplink.productsList),
         ("PRODUCTSONLY://products", Deeplink.productsList),
+        ("productsonly://PrOdUcTs/42", Deeplink.productDetails(id: 42)),
         ("productsonly://products/42", Deeplink.productDetails(id: 42)),
         ("productsonly://products/42?source=push", Deeplink.productDetails(id: 42))
     ])
@@ -30,6 +31,8 @@ struct DeeplinkTests {
         "https://products/42",
         "productsonly://",
         "productsonly://unknown",
+        "productsonly://products/0",
+        "productsonly://products/-1",
         "productsonly://products/abc",
         "productsonly://products/42/reviews"
     ])

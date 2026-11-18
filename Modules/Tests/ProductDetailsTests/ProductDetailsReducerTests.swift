@@ -93,6 +93,25 @@ struct ProductDetailsReducerTests {
     }
 
     @Test("""
+    Given a missing product
+    When the screen appears and the repository reports it was not found
+    Then the missing product is shown and reappearing does not issue another request
+    """)
+    func productNotFound() async {
+        let deps = makeDependencies()
+        deps.repository.setHandler { _ in throw ProductDetailsRepositoryError.notFound }
+        let store = makeStore(deps: deps)
+
+        await store.send(.view(.onAppear(isFirstTime: true)))
+        await store.receive(._internal(.productNotFound)) {
+            $0.content = .notFound
+        }
+        await store.send(.view(.onAppear(isFirstTime: false)))
+
+        #expect(deps.repository.requests == [ProductDetailsRequest(id: 7)])
+    }
+
+    @Test("""
     Given loaded state
     When the screen appears again
     Then the screen view is not tracked and nothing is fetched
@@ -169,7 +188,7 @@ struct ProductDetailsReducerTests {
         When the retry button is tapped
         Then nothing changes and nothing is fetched
         """,
-        arguments: [State.Content.loading, .loaded(.mock(id: 7))]
+        arguments: [State.Content.loading, .loaded(.mock(id: 7)), .notFound]
     )
     func retryWhenNotFailed(content: ProductDetailsReducer.State.Content) async {
         let deps = makeDependencies()

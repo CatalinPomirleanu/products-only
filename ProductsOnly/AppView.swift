@@ -46,6 +46,10 @@ nonisolated struct AppReducer {
         }
         Reduce<State, Action> { state, action in
             switch action {
+            case .path(.element(_, .productDetails(.delegate(.backToProducts)))):
+                state.path.removeAll()
+                return .none
+
             case .path:
                 return .none
 

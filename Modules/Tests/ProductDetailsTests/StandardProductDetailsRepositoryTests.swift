@@ -34,6 +34,20 @@ struct StandardProductDetailsRepositoryTests {
     }
 
     @Test("""
+    Given an api client that returns a 404
+    When fetching a product
+    Then the repository reports that the product was not found
+    """)
+    func productNotFound() async {
+        let apiClient = APIClientMock(result: .failure(.unacceptableStatusCode(404)))
+        let sut = makeSUT(apiClient: apiClient)
+
+        await #expect(throws: ProductDetailsRepositoryError.notFound) {
+            try await sut.fetch(request: ProductDetailsRequest(id: 7))
+        }
+    }
+
+    @Test("""
     Given an api client that fails
     When fetching a request
     Then its error is thrown unchanged

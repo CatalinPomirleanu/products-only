@@ -15,6 +15,7 @@ public nonisolated struct ProductDetailsReducer {
             case failed
             case loaded(ProductDetails)
             case loading
+            case notFound
         }
 
         public let id: Int
@@ -28,11 +29,16 @@ public nonisolated struct ProductDetailsReducer {
         }
     }
 
-    public enum Action: Equatable, InternalActionScope, ViewActionScope {
+    public enum Action: Equatable, ScopedAction {
+
+        public enum DelegateAction: Equatable {
+            case backToProducts
+        }
 
         public enum InternalAction: Equatable {
             case fetchFailure
             case fetchSuccess(ProductDetails)
+            case productNotFound
         }
 
         public enum ViewAction: Equatable {
@@ -40,6 +46,7 @@ public nonisolated struct ProductDetailsReducer {
             case retryButtonTapped
         }
 
+        case delegate(DelegateAction)
         case _internal(InternalAction)
         case view(ViewAction)
     }
@@ -57,12 +64,19 @@ public nonisolated struct ProductDetailsReducer {
     public var body: some ReducerOf<Self> {
         Reduce<State, Action> { state, action in
             switch action {
+            case .delegate:
+                return .none
+
             case ._internal(.fetchFailure):
                 state.content = .failed
                 return .none
 
             case ._internal(.fetchSuccess(let details)):
                 state.content = .loaded(details)
+                return .none
+
+            case ._internal(.productNotFound):
+                state.content = .notFound
                 return .none
 
             case .view(.onAppear(let isFirstTime)):
@@ -89,7 +103,11 @@ public nonisolated struct ProductDetailsReducer {
             } catch {
                 guard !Task.isCancelled else { return }
                 trackErrorUseCase.execute(error: "Product Details \(id) fetch failed", screen: screen)
-                await send(._internal(.fetchFailure))
+                if case ProductDetailsRepositoryError.notFound = error {
+                    await send(._internal(.productNotFound))
+                } else {
+                    await send(._internal(.fetchFailure))
+                }
             }
         }.cancellable(id: CancelID.fetch, cancelInFlight: true)
     }
@@ -146,6 +164,15 @@ public struct ProductDetailsView: View {
                 ForEach(0..<skeletonCount, id: \.self) { _ in
                     ProductCardView(content: .loading) { }
                 }
+            }
+
+        case .notFound:
+            EmptyStateView(
+                icon: .box,
+                title: L10n.Details.notFoundTitle,
+                actionButton: EmptyStateView.ActionButton(title: L10n.Details.backToProducts)
+            ) {
+                store.send(.delegate(.backToProducts))
             }
         }
     }

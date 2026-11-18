@@ -87,6 +87,16 @@
       "extractionState": "manual",
       "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Back" } } }
     },
+    "details.backToProducts": {
+      "comment": "Button returning to the product list when a product cannot be found.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Back to products" } } }
+    },
+    "details.notFound.title": {
+      "comment": "Title shown when the requested product does not exist.",
+      "extractionState": "manual",
+      "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Product not found" } } }
+    },
     "details.section.about": {
       "comment": "Details screen. Heading above the description and tags.",
       "extractionState": "manual",

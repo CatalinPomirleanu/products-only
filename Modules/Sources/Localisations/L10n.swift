@@ -56,6 +56,12 @@ public enum L10n {
         /// Back
         public static var back: String { String(localized: "details.back", bundle: .module) }
 
+        /// Back to products
+        public static var backToProducts: String { String(localized: "details.backToProducts", bundle: .module) }
+
+        /// Product not found
+        public static var notFoundTitle: String { String(localized: "details.notFound.title", bundle: .module) }
+
         /// About this product
         public static var sectionAbout: String { String(localized: "details.section.about", bundle: .module) }
 
