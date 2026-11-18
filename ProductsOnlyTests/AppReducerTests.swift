@@ -3,6 +3,7 @@ import Foundation
 import ProductDetails
 import ProductsList
 import Testing
+import Tracking
 
 @testable import ProductsOnly
 
@@ -21,11 +22,21 @@ struct AppReducerTests {
     Then its details are pushed onto the stack
     """)
     func productTapped() async {
+        let trackUserInteraction = TrackUserInteractionUseCaseMock()
         let store = makeStore()
+        store.dependencies.trackUserInteractionUseCase = trackUserInteraction
 
         await store.send(.productsList(.delegate(.productSelected(id: 7)))) {
             $0.path[id: 0] = .productDetails(ProductDetailsReducer.State(id: 7))
         }
+        await store.finish()
+
+        #expect(trackUserInteraction.calls == [
+            TrackUserInteractionUseCaseMock.Call(
+                interaction: .gesture(trackingData: "Tap on Product: 7"),
+                screen: .productsList
+            )
+        ])
     }
 
     @Test("""

@@ -3,14 +3,14 @@ import DesignSystem
 import Localisations
 import StyleGuide
 import SwiftUI
+import Tracking
 
 @Reducer
 public nonisolated struct ProductsListReducer {
 
     @ObservableState
     public struct State: Equatable {
-
-        public struct Results: Equatable, Sendable {
+        struct Results: Equatable, Sendable {
             public var products: IdentifiedArrayOf<Product>
             public var total: Int
             public var nextOffset: Int?
@@ -30,24 +30,27 @@ public nonisolated struct ProductsListReducer {
         }
 
         @CasePathable
-        public enum Content: Equatable, Sendable {
+        enum Content: Equatable, Sendable {
             case failed
             case loaded(Results)
             case loading
         }
 
-        public enum NextPageStatus: Equatable, Sendable {
+        enum NextPageStatus: Equatable, Sendable {
             case failed
             case idle
             case loading
         }
 
-        public var content: Content = .loading
-        public var nextPage: NextPageStatus = .idle
-        public var query = ""
-        public var appliedQuery = ""
+        var content: Content = .loading
+        var nextPage: NextPageStatus = .idle
+        var query = ""
+        var appliedQuery = ""
+        let screen: Screen
 
-        public init() { }
+        public init(screen: Screen = .productsList) {
+            self.screen = screen
+        }
     }
 
     public enum Action: Equatable, ScopedAction {
@@ -67,7 +70,7 @@ public nonisolated struct ProductsListReducer {
         public enum ViewAction: Equatable {
             case clearSearchButtonTapped
             case nextPageRetryButtonTapped
-            case onAppear
+            case onAppear(isFirstTime: Bool)
             case onDisappear
             case productAppeared(id: Int)
             case retryButtonTapped
@@ -90,12 +93,20 @@ public nonisolated struct ProductsListReducer {
 
     @Dependency(\.continuousClock) private var clock
     @Dependency(\.fetchProductsUseCase) private var fetchProductsUseCase
+    @Dependency(\.trackErrorUseCase) private var trackErrorUseCase
+    @Dependency(\.trackUserInteractionUseCase) private var trackUserInteractionUseCase
+    @Dependency(\.trackScreenUseCase) private var trackScreenUseCase
 
     public init() { }
 
     public var body: some ReducerOf<Self> {
         Reduce<State, Action> { state, action in
             switch action {
+            case .delegate(.productSelected(let id)):
+                return .run { [screen = state.screen, trackUserInteractionUseCase] _ in
+                    trackUserInteractionUseCase.execute(interaction: .gesture(trackingData: "Tap on Product: \(id)"), screen: screen)
+                }
+
             case .delegate:
                 return .none
 
@@ -146,17 +157,21 @@ public nonisolated struct ProductsListReducer {
                 }
                 return loadNextPage(&state)
 
-            case .view(.onAppear):
+            case .view(.onAppear(let isFirstTime)):
+                if isFirstTime {
+                    trackScreenUseCase.execute(screen: state.screen)
+                }
+
                 if normalized(state.query) != state.appliedQuery {
                     return commitQuery(&state)
                 }
 
                 if state.content == .loading {
-                    return fetch(query: state.appliedQuery)
+                    return fetch(query: state.appliedQuery, screen: state.screen)
                 }
 
                 if state.nextPage == .loading, let results = state.content[case: \.loaded], let offset = results.nextOffset {
-                    return fetch(query: state.appliedQuery, offset: offset, limit: results.limit)
+                    return fetch(query: state.appliedQuery, screen: state.screen, offset: offset, limit: results.limit)
                 }
 
                 return .none
@@ -178,7 +193,7 @@ public nonisolated struct ProductsListReducer {
             case .view(.retryButtonTapped):
                 guard state.content == .failed else { return .none }
                 state.content = .loading
-                return fetch(query: state.appliedQuery)
+                return fetch(query: state.appliedQuery, screen: state.screen)
 
             case .view(.searchSubmitted):
                 return commitQuery(&state)
@@ -211,7 +226,7 @@ public nonisolated struct ProductsListReducer {
         state.content = .loading
         state.nextPage = .idle
 
-        return .merge(.cancel(id: CancelID.debounce), fetch(query: query))
+        return .merge(.cancel(id: CancelID.debounce), fetch(query: query, screen: state.screen))
     }
 
     private func loadNextPage(_ state: inout State) -> EffectOf<Self> {
@@ -224,17 +239,18 @@ public nonisolated struct ProductsListReducer {
         }
 
         state.nextPage = .loading
-        return fetch(query: state.appliedQuery, offset: offset, limit: results.limit)
+        return fetch(query: state.appliedQuery, screen: state.screen, offset: offset, limit: results.limit)
     }
 
-    private func fetch(query: String, offset: Int = 0, limit: Int = 20) -> EffectOf<Self> {
-        .run { [fetchProductsUseCase] send in
+    private func fetch(query: String, screen: Screen, offset: Int = 0, limit: Int = 20) -> EffectOf<Self> {
+        .run { [fetchProductsUseCase, trackErrorUseCase] send in
             do {
                 let fetchMode: FetchProductsMode = query.isEmpty ? .standard : .search(query)
                 let page = try await fetchProductsUseCase.execute(mode: fetchMode, offset: offset, limit: limit)
                 await send(._internal(offset == 0 ? .firstPageLoaded(page, query: query) : .nextPageLoaded(page, query: query)))
             } catch {
                 guard !Task.isCancelled else { return }
+                trackErrorUseCase.execute(error: "Products list fetch failed", screen: screen)
                 await send(._internal(offset == 0 ? .firstPageFailed(query: query) : .nextPageFailed(query: query)))
             }
         }.cancellable(id: CancelID.fetch, cancelInFlight: true)
@@ -266,7 +282,7 @@ public struct ProductsListView: View {
         }
         .background(Color.catalog.surface)
         .navigationTitle(L10n.List.title)
-        .onAppear { store.send(.onAppear) }
+        .ccp.onAppear { store.send(.onAppear(isFirstTime: $0)) }
         .onDisappear { store.send(.onDisappear) }
     }
 

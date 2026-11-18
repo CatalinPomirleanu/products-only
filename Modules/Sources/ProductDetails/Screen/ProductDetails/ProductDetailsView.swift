@@ -3,6 +3,7 @@ import DesignSystem
 import Localisations
 import StyleGuide
 import SwiftUI
+import Tracking
 
 @Reducer
 public nonisolated struct ProductDetailsReducer {
@@ -17,10 +18,12 @@ public nonisolated struct ProductDetailsReducer {
         }
 
         public let id: Int
+        public let screen: Screen
         public var content: Content
 
-        public init(id: Int, content: Content = .loading) {
+        public init(id: Int, screen: Screen = .productDetails, content: Content = .loading) {
             self.id = id
+            self.screen = screen
             self.content = content
         }
     }
@@ -33,7 +36,7 @@ public nonisolated struct ProductDetailsReducer {
         }
 
         public enum ViewAction: Equatable {
-            case onAppear
+            case onAppear(isFirstTime: Bool)
             case retryButtonTapped
         }
 
@@ -46,6 +49,8 @@ public nonisolated struct ProductDetailsReducer {
     }
 
     @Dependency(\.productDetailsRepository) private var productDetailsRepository
+    @Dependency(\.trackErrorUseCase) private var trackErrorUseCase
+    @Dependency(\.trackScreenUseCase) private var trackScreenUseCase
 
     public init() { }
 
@@ -60,26 +65,30 @@ public nonisolated struct ProductDetailsReducer {
                 state.content = .loaded(details)
                 return .none
 
-            case .view(.onAppear):
+            case .view(.onAppear(let isFirstTime)):
+                if isFirstTime {
+                    trackScreenUseCase.execute(screen: state.screen)
+                }
                 guard state.content.is(\.loading) else { return .none }
-                return fetch(id: state.id)
+                return fetch(id: state.id, screen: state.screen)
 
             case .view(.retryButtonTapped):
                 guard state.content.is(\.failed) else { return .none }
                 state.content = .loading
-                return fetch(id: state.id)
+                return fetch(id: state.id, screen: state.screen)
             }
         }
     }
 
-    private func fetch(id: Int) -> EffectOf<Self> {
-        .run { [productDetailsRepository] send in
+    private func fetch(id: Int, screen: Screen) -> EffectOf<Self> {
+        .run { [productDetailsRepository, trackErrorUseCase] send in
             do {
                 let request = ProductDetailsRequest(id: id)
                 let details = try await productDetailsRepository.fetch(request: request)
                 await send(._internal(.fetchSuccess(details)))
             } catch {
                 guard !Task.isCancelled else { return }
+                trackErrorUseCase.execute(error: "Product Details \(id) fetch failed", screen: screen)
                 await send(._internal(.fetchFailure))
             }
         }.cancellable(id: CancelID.fetch, cancelInFlight: true)
@@ -107,7 +116,7 @@ public struct ProductDetailsView: View {
         .background(Color.catalog.surface)
         .navigationTitle(store.content[case: \.loaded].map { CatalogFormat.category($0.category) } ?? "")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { store.send(.onAppear) }
+        .ccp.onAppear { store.send(.onAppear(isFirstTime: $0)) }
     }
 
     @ViewBuilder

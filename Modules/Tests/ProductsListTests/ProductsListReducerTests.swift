@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import Foundation
 import Testing
+import Tracking
 
 @testable import ProductsList
 
@@ -8,7 +9,15 @@ import Testing
 struct ProductsListReducerTests {
 
     private typealias State = ProductsListReducer.State
-    private typealias Dependencies = (clock: TestClock<Duration>, useCase: FetchProductsUseCaseMock)
+    private typealias Dependencies = (
+        clock: TestClock<Duration>,
+        trackError: TrackErrorUseCaseMock,
+        trackScreen: TrackScreenUseCaseMock,
+        trackUserInteraction: TrackUserInteractionUseCaseMock,
+        useCase: FetchProductsUseCaseMock
+    )
+
+    private let fetchError = TrackErrorUseCaseMock.Call(error: "Products list fetch failed", screen: .productsList)
 
     private let firstPage = ProductsPage.mock(ids: 1...20, total: 45)
     private let secondPage = ProductsPage.mock(ids: 21...40, total: 45, skip: 20)
@@ -17,6 +26,9 @@ struct ProductsListReducerTests {
     private func makeDependencies() -> Dependencies {
         (
             TestClock(),
+            TrackErrorUseCaseMock(),
+            TrackScreenUseCaseMock(),
+            TrackUserInteractionUseCaseMock(),
             FetchProductsUseCaseMock()
         )
     }
@@ -27,6 +39,9 @@ struct ProductsListReducerTests {
         } withDependencies: {
             $0.continuousClock = deps.clock
             $0.fetchProductsUseCase = deps.useCase
+            $0.trackErrorUseCase = deps.trackError
+            $0.trackScreenUseCase = deps.trackScreen
+            $0.trackUserInteractionUseCase = deps.trackUserInteraction
         }
     }
 
@@ -56,15 +71,15 @@ struct ProductsListReducerTests {
 
     @Test("""
     Given default state
-    When the screen appears
-    Then the first standard page is fetched and shown
+    When the screen appears for the first time
+    Then the screen view is tracked and the first standard page is fetched and shown
     """)
     func onAppear() async {
         let deps = makeDependencies()
         deps.useCase.setHandler { [firstPage] _, _, _ in firstPage }
         let store = makeStore(deps: deps)
 
-        await store.send(.view(.onAppear))
+        await store.send(.view(.onAppear(isFirstTime: true)))
         await store.receive(._internal(.firstPageLoaded(firstPage, query: ""))) {
             $0.content = .loaded(State.Results(page: firstPage))
         }
@@ -73,22 +88,40 @@ struct ProductsListReducerTests {
         #expect(deps.useCase.calls.first?.mode == .standard)
         #expect(deps.useCase.calls.first?.offset == 0)
         #expect(deps.useCase.calls.first?.limit == 20)
+        #expect(deps.trackScreen.screens == [.productsList])
+        #expect(deps.trackError.calls.isEmpty)
+    }
+
+    @Test("""
+    Given a loaded list
+    When the screen appears again
+    Then the screen view is not tracked and nothing is fetched
+    """)
+    func onAppearAgain() async {
+        let deps = makeDependencies()
+        let store = makeStore(initialState: makeState(page: firstPage), deps: deps)
+
+        await store.send(.view(.onAppear(isFirstTime: false)))
+
+        #expect(deps.trackScreen.screens.isEmpty)
+        #expect(deps.useCase.calls.isEmpty)
     }
 
     @Test("""
     Given a first page request that fails
     When the retry button is tapped
-    Then the first page is fetched again and shown
+    Then the error is tracked once and the first page is fetched again and shown
     """)
     func firstPageFailureAndRetry() async {
         let deps = makeDependencies()
         deps.useCase.setHandler { _, _, _ in throw URLError(.notConnectedToInternet) }
         let store = makeStore(deps: deps)
 
-        await store.send(.view(.onAppear))
+        await store.send(.view(.onAppear(isFirstTime: true)))
         await store.receive(._internal(.firstPageFailed(query: ""))) {
             $0.content = .failed
         }
+        #expect(deps.trackError.calls == [fetchError])
 
         deps.useCase.setHandler { [firstPage] _, _, _ in firstPage }
         await store.send(.view(.retryButtonTapped)) {
@@ -99,6 +132,7 @@ struct ProductsListReducerTests {
         }
 
         #expect(deps.useCase.calls.count == 2)
+        #expect(deps.trackError.calls == [fetchError])
     }
 
     @Test("""
@@ -205,7 +239,7 @@ struct ProductsListReducerTests {
     @Test("""
     Given a next page request that fails
     When the last product appears again and then the retry button is tapped
-    Then the loaded products are kept, only the retry fetches, and the page is appended
+    Then the loaded products are kept, the error is tracked, only the retry fetches, and the page is appended
     """)
     func nextPageFailureAndRetry() async {
         let deps = makeDependencies()
@@ -221,6 +255,7 @@ struct ProductsListReducerTests {
 
         await store.send(.view(.productAppeared(id: 20)))
         #expect(deps.useCase.calls.count == 1)
+        #expect(deps.trackError.calls == [fetchError])
 
         deps.useCase.setHandler { [secondPage] _, _, _ in secondPage }
         await store.send(.view(.nextPageRetryButtonTapped)) {
@@ -233,6 +268,7 @@ struct ProductsListReducerTests {
 
         #expect(deps.useCase.calls.count == 2)
         #expect(deps.useCase.calls.last?.offset == 20)
+        #expect(deps.trackError.calls == [fetchError])
     }
 
     // MARK: - Search
@@ -395,7 +431,7 @@ struct ProductsListReducerTests {
     @Test("""
     Given a loaded standard list
     When a search fails on its first page
-    Then the error replaces the list
+    Then the error is tracked and replaces the list
     """)
     func searchFailure() async {
         let deps = makeDependencies()
@@ -411,6 +447,8 @@ struct ProductsListReducerTests {
         await store.receive(._internal(.firstPageFailed(query: "red"))) {
             $0.content = .failed
         }
+
+        #expect(deps.trackError.calls == [fetchError])
     }
 
     // MARK: - Cancellation
@@ -418,7 +456,7 @@ struct ProductsListReducerTests {
     @Test("""
     Given a next page request in flight
     When the query changes
-    Then the request is cancelled without an error and the search results replace the list
+    Then the request is cancelled without a tracked error and the search results replace the list
     """)
     func queryChangeCancelsNextPage() async {
         let deps = makeDependencies()
@@ -446,6 +484,7 @@ struct ProductsListReducerTests {
         }
 
         #expect(deps.useCase.calls.count == 2)
+        #expect(deps.trackError.calls.isEmpty)
     }
 
     @Test("""
@@ -499,23 +538,25 @@ struct ProductsListReducerTests {
     @Test("""
     Given a first page request in flight
     When the screen disappears and appears again
-    Then the request is cancelled without an error and issued again
+    Then the request is cancelled without a tracked error and issued again, and the screen view is tracked once
     """)
     func disappearCancelsAndAppearRestarts() async {
         let deps = makeDependencies()
         deps.useCase.setHandler { _, _, _ in try await Task.never() }
         let store = makeStore(deps: deps)
 
-        await store.send(.view(.onAppear))
+        await store.send(.view(.onAppear(isFirstTime: true)))
         await store.send(.view(.onDisappear))
 
         deps.useCase.setHandler { [firstPage] _, _, _ in firstPage }
-        await store.send(.view(.onAppear))
+        await store.send(.view(.onAppear(isFirstTime: false)))
         await store.receive(._internal(.firstPageLoaded(firstPage, query: ""))) {
             $0.content = .loaded(State.Results(page: firstPage))
         }
 
         #expect(deps.useCase.calls.count == 2)
+        #expect(deps.trackScreen.screens == [.productsList])
+        #expect(deps.trackError.calls.isEmpty)
     }
 
     @Test("""
@@ -528,7 +569,7 @@ struct ProductsListReducerTests {
         deps.useCase.setHandler { [secondPage] _, _, _ in secondPage }
         let store = makeStore(initialState: makeState(page: firstPage, nextPage: .loading), deps: deps)
 
-        await store.send(.view(.onAppear))
+        await store.send(.view(.onAppear(isFirstTime: false)))
         await store.receive(._internal(.nextPageLoaded(secondPage, query: ""))) {
             $0.content = makeBothPagesContent()
             $0.nextPage = .idle
@@ -554,12 +595,34 @@ struct ProductsListReducerTests {
         await deps.clock.advance(by: ProductsListReducer.searchDebounce)
         #expect(deps.useCase.calls.isEmpty)
 
-        await store.send(.view(.onAppear)) {
+        await store.send(.view(.onAppear(isFirstTime: false))) {
             $0.appliedQuery = "red"
             $0.content = .loading
         }
         await store.receive(._internal(.firstPageLoaded(searchPage, query: "red"))) {
             $0.content = .loaded(State.Results(page: searchPage))
         }
+    }
+
+    // MARK: - Tracking
+
+    @Test("""
+    Given a loaded list
+    When a product is selected
+    Then the tap is tracked for the products list screen
+    """)
+    func productSelected() async {
+        let deps = makeDependencies()
+        let store = makeStore(initialState: makeState(page: firstPage), deps: deps)
+
+        await store.send(.delegate(.productSelected(id: 7)))
+        await store.finish()
+
+        #expect(deps.trackUserInteraction.calls == [
+            TrackUserInteractionUseCaseMock.Call(
+                interaction: .gesture(trackingData: "Tap on Product: 7"),
+                screen: .productsList
+            )
+        ])
     }
 }

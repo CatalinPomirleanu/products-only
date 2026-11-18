@@ -21,7 +21,8 @@ let package = Package(
         .library(name: "Localisations", targets: ["Localisations"]),
         .library(name: "ProductDetails", targets: ["ProductDetails"]),
         .library(name: "ProductsList", targets: ["ProductsList"]),
-        .library(name: "StyleGuide", targets: ["StyleGuide"])
+        .library(name: "StyleGuide", targets: ["StyleGuide"]),
+        .library(name: "Tracking", targets: ["Tracking"])
     ],
     dependencies: [
         .package(
@@ -59,7 +60,7 @@ let package = Package(
 
         .target(
             name: "DesignSystem",
-            dependencies: ["Localisations", "StyleGuide"],
+            dependencies: ["Core", "Localisations", "StyleGuide"],
             swiftSettings: mainActorIsolation
         ),
 
@@ -69,6 +70,13 @@ let package = Package(
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
             ],
             swiftSettings: mainActorIsolation
+        ),
+
+        .target(
+            name: "Tracking",
+            dependencies: [
+                .product(name: "Dependencies", package: "swift-dependencies")
+            ]
         ),
 
         // MARK: - Features
@@ -81,13 +89,14 @@ let package = Package(
                 "Core",
                 "DesignSystem",
                 "Localisations",
-                "StyleGuide"
+                "StyleGuide",
+                "Tracking"
             ],
             swiftSettings: mainActorIsolation
         ),
         .testTarget(
             name: "ProductDetailsTests",
-            dependencies: ["API", "ProductDetails"],
+            dependencies: ["API", "ProductDetails", "Tracking"],
             swiftSettings: mainActorIsolation
         ),
 
@@ -99,13 +108,14 @@ let package = Package(
                 "Core",
                 "DesignSystem",
                 "Localisations",
-                "StyleGuide"
+                "StyleGuide",
+                "Tracking"
             ],
             swiftSettings: mainActorIsolation
         ),
         .testTarget(
             name: "ProductsListTests",
-            dependencies: ["API", "ProductsList"],
+            dependencies: ["API", "ProductsList", "Tracking"],
             swiftSettings: mainActorIsolation
         )
     ],
