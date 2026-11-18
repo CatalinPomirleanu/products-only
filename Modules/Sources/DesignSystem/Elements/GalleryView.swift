@@ -3,22 +3,32 @@ import StyleGuide
 import SwiftUI
 
 public struct GalleryView: View {
+    private enum Item {
+        case image(Image?)
+        case remote(URL)
+    }
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private let images: [Image?]
+    private let items: [Item]
     private let title: String
 
     @State private var currentIndex: Int? = 0
 
     public init(images: [Image?], title: String) {
-        self.images = images.isEmpty ? [nil] : images
+        self.items = images.isEmpty ? [.image(nil)] : images.map(Item.image)
+        self.title = title
+    }
+
+    public init(urls: [URL], title: String) {
+        self.items = urls.isEmpty ? [.image(nil)] : urls.map(Item.remote)
         self.title = title
     }
 
     public var body: some View {
         VStack(spacing: Spacing.s2) {
             track
-            if images.count > 1 {
+            if items.count > 1 {
                 dots
             }
         }
@@ -29,14 +39,9 @@ public struct GalleryView: View {
     private var track: some View {
         ScrollView(.horizontal) {
             LazyHStack(spacing: 0) {
-                ForEach(images.indices, id: \.self) { index in
-                    ImageWellView(
-                        image: images[index],
-                        inset: Spacing.s4,
-                        placeholderSize: 32,
-                        title: makeImageTitle(index)
-                    )
-                    .containerRelativeFrame(.horizontal)
+                ForEach(items.indices, id: \.self) { index in
+                    makePage(index)
+                        .containerRelativeFrame(.horizontal)
                 }
             }
             .scrollTargetLayout()
@@ -51,7 +56,7 @@ public struct GalleryView: View {
 
     private var dots: some View {
         HStack(spacing: 0) {
-            ForEach(images.indices, id: \.self) { index in
+            ForEach(items.indices, id: \.self) { index in
                 let isCurrent = index == (currentIndex ?? 0)
 
                 Button {
@@ -72,9 +77,42 @@ public struct GalleryView: View {
         }
     }
 
+    @ViewBuilder
+    private func makePage(_ index: Int) -> some View {
+        switch items[index] {
+        case .image(let image):
+            makeImageWell(image, index: index)
+
+        case .remote(let url):
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .empty:
+                    ZStack {
+                        Color.catalog.surfaceSunken
+                        ProgressView()
+                    }
+                    .accessibilityLabel(makeImageTitle(index))
+
+                case .success(let image):
+                    makeImageWell(image, index: index)
+
+                case .failure:
+                    makeImageWell(nil, index: index)
+
+                @unknown default:
+                    makeImageWell(nil, index: index)
+                }
+            }
+        }
+    }
+
+    private func makeImageWell(_ image: Image?, index: Int) -> some View {
+        ImageWellView(image: image, inset: Spacing.s4, placeholderSize: 32, title: makeImageTitle(index))
+    }
+
     private func makeImageTitle(_ index: Int) -> String {
-        guard images.count > 1 else { return title }
-        return L10n.A11y.galleryImage(title: title, position: index + 1, total: images.count)
+        guard items.count > 1 else { return title }
+        return L10n.A11y.galleryImage(title: title, position: index + 1, total: items.count)
     }
 }
 

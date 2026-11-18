@@ -75,7 +75,19 @@ let package = Package(
 
         .target(
             name: "ProductDetails",
-            dependencies: ["API", "ComposableArchitectureSupport", "Core", "DesignSystem"],
+            dependencies: [
+                "API",
+                "ComposableArchitectureSupport",
+                "Core",
+                "DesignSystem",
+                "Localisations",
+                "StyleGuide"
+            ],
+            swiftSettings: mainActorIsolation
+        ),
+        .testTarget(
+            name: "ProductDetailsTests",
+            dependencies: ["API", "ProductDetails"],
             swiftSettings: mainActorIsolation
         ),
 
